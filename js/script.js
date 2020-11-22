@@ -97,6 +97,9 @@ function onCellClick(e) {
 	const td = e.target
 	rowCoord = +td.dataset.rowCoord;
 	columnCoord = +td.dataset.columnCoord;
+	if(cellsProperties2DArray[rowCoord][columnCoord].markedAsBomb) {
+		return;
+	}
 	if(e.button === 0) {
 		if(!cellsProperties2DArray[rowCoord][columnCoord].isClicked) {
 			clickCell(td, rowCoord, columnCoord)

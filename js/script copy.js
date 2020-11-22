@@ -36,7 +36,6 @@ function restartGameHandler() {
 	const numbersOfCells = getNumbersArray(SIZE * SIZE);
 
 	numberOfBombs = Number.parseInt((SIZE * SIZE) / 6);
-	console.log(numberOfBombs);
 
 	const randomCellsNumbers = getRandomNumbers(numberOfBombs, numbersOfCells)
 
@@ -50,6 +49,7 @@ function restartGameHandler() {
 
 	// добавим обработчики
 	table.addEventListener('mousedown', onCellClick)
+	table.addEventListener('mousedown', pendWin)
 	table.addEventListener('dblclick', onCellDoubleClick)
 	table.addEventListener('mousedown', showStartButton)
 	table.addEventListener('contextmenu', toggleMark)
@@ -185,7 +185,6 @@ function onCellDoubleClick(e) {
 	const columnIndex = +td.dataset.columnCoord;
 	if(e.button === 0) {
 		if(cellsProperties2DArray[rowIndex][columnIndex].isClicked) {
-			console.log(cellsProperties2DArray[rowIndex][columnIndex])
 			let markedNeighbours = 0;
 			if(rowIndex - 1 >= 0 && columnIndex - 1 >= 0) {
 				if(cellsProperties2DArray[rowIndex - 1][columnIndex - 1].markedAsBomb) {
@@ -228,7 +227,6 @@ function onCellDoubleClick(e) {
 				}
 			}
 			if(markedNeighbours === cellsProperties2DArray[rowIndex][columnIndex].neighbours){
-				console.log(true)
 				processNeighbours(rowIndex, columnIndex, clickOneCell)
 			}
 		}
@@ -259,7 +257,7 @@ function clickOneCell(td, rowCoord, columnCoord) {
 // при клике на бомбу покажем бомбы и запретим кликать по таблице
 function gameOver() {
 	const resultBox = document.querySelector(".result-box");
-	resultBox.textContent = "You loose!";
+	resultBox.textContent = "Вы проиграли!";
 	resultBox.style.visibility = "visible";
 	table.removeEventListener('mousedown', onCellClick);
 	table.removeEventListener('contextmenu', toggleMark);
@@ -292,7 +290,24 @@ function toggleMark (e) {
 		}
 	}
   // обновим значение счетчика мин
-  refreshCounter()
+	pendWin();
+}
+
+function pendWin() {
+	const markedCellsNum = refreshCounter();
+	let clickedCellsNum = 0;
+	cellsProperties2DArray.forEach((rowProperty) => {
+		rowProperty.forEach((cellProperty) => {
+			if(cellProperty.isClicked === true) {
+				clickedCellsNum++
+			}
+		})
+	})
+	console.log(`clickedCellsNum: ${clickedCellsNum}`)
+	console.log(`markedCellsNum: ${markedCellsNum}`)
+	if(clickedCellsNum + markedCellsNum + 1 === SIZE * SIZE) {
+		congradulate();
+	}
 }
 
 // создадим контейнер для кнопка "Старт" и счетчика мин
@@ -339,6 +354,12 @@ function hideResultBox() {
 	resultBox.style.visibility = "hidden";
 }
 
+function congradulate() {
+	const resultBox = document.querySelector('.result-box');
+	resultBox.textContent = "Вы выиграли!"
+	resultBox.style.visibility = "visible";
+}
+
 // создадим кнопку "Старт"
 function addStartButton() {
 	const startButton = document.createElement('button')
@@ -366,12 +387,11 @@ function addCounter() {
 	counterSpan.classList.add('counter')
 	const controlsContainer = document.querySelector('.controls-container')
 	controlsContainer.append(counterSpan)
-	counterSpan.innerText = `${numberOfBombs - refreshCounter()} of ${numberOfBombs} left`;
+	counterSpan.innerText = `${numberOfBombs - refreshCounter()} из ${numberOfBombs} осталось`;
 }
 
 // обновим значение счетчика мин
 function refreshCounter() {
-	console.log(numberOfBombs)
 	const counterSpan = document.querySelector('.counter');
 	let markedCells = 0;
 	cellsProperties2DArray.forEach((rowProperty) => {
@@ -381,7 +401,7 @@ function refreshCounter() {
 			}
 		})
 	})
-	counterSpan.innerText = `${numberOfBombs - markedCells} of  ${numberOfBombs} left`;
+	counterSpan.innerText = `${numberOfBombs - markedCells} из  ${numberOfBombs} осталось`;
 	return markedCells;
 }
 
